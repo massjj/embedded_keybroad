@@ -15,10 +15,17 @@ void USART_Init(unsigned int ubrr) {
     UCSR0C |= (1 << UCSZ01)|(1 << UCSZ00);
 }
 void USART_Transmit( unsigned char data ) {
-    // Wait for empty transmit buffer 
+     //LED-state high
+    PORTD |= (1 << PORTD7);
+    _delay_ms(50);      
+    //ascii Put data into buffer, sends the data 
+    //USART_Transmit
     while ( !( UCSR0A & (1 << UDRE0)) ) ;
-    // Put data into buffer, sends the data 
     UDR0 = data;
+    _delay_ms(300);
+    //LED-state low
+    PORTD &= ~(1 << PORTD7);
+    _delay_ms(10);
 }
 
 void TIMER1_Init() {
@@ -30,6 +37,7 @@ void TIMER1_Init() {
 }
 
 void keyScan() {
+    
     //button
         //taking value from the column
         uint8_t pressC = PINB ;
@@ -43,7 +51,7 @@ void keyScan() {
         
         // taking value from the row
         int temp = PINC ;
-        uint8_t pressR = temp << 4 ; // chip to front
+        uint8_t pressR = temp << 4 ; // shift to front
         
         //assembly value from col and row
         uint8_t press = pressC | pressR;
@@ -52,11 +60,11 @@ void keyScan() {
         //Column one
         if(press == 0b11101110){
             USART_Transmit(65); //A
-            _delay_ms(300);
+           
         }
         else if (press == 0b11011110){
             USART_Transmit(66); //B
-            _delay_ms(300);
+           
         }
         else if (press == 0b10111110){
             USART_Transmit(67); //C
@@ -64,69 +72,71 @@ void keyScan() {
         }
         else if(press == 0b01111110){
             USART_Transmit(68); //D
-            _delay_ms(300);
+           
         }
         //Column Two
         else if(press == 0b11101101){
             USART_Transmit(69); //E
-            _delay_ms(300);
+         
         }
         else if(press == 0b11011101){
             USART_Transmit(70); //F
-            _delay_ms(300);
+          
         }
         else if(press == 0b10111101){
             USART_Transmit(71); //G
-            _delay_ms(300);
+        
         }
         else if(press == 0b01111101){
             USART_Transmit(72); //H
-            _delay_ms(300);
+         
         }
         //Column Three
         else if(press == 0b11101011){
             USART_Transmit(73); //I
-            _delay_ms(300);
+     
         }
         else if(press == 0b11011011){
             USART_Transmit(74); //J
-            _delay_ms(300);
+         
         }
         else if(press == 0b10111011){
             USART_Transmit(75); //K
-            _delay_ms(300);
+      
         }
         else if(press == 0b01111011){
             USART_Transmit(76); //L
-            _delay_ms(300);
+        
         }
          //Column Four
         else if(press == 0b11100111){
             USART_Transmit(77); //M
-            _delay_ms(300);
+  
         }
         else if(press == 0b11010111){
             USART_Transmit(78); //N
-            _delay_ms(300);
+
         }
         else if(press == 0b10110111){
             USART_Transmit(79); //O
-            _delay_ms(300);
+
         }
         else if(press == 0b01110111){
             USART_Transmit(80); //P
-            _delay_ms(300);
         }
 }
-    
+ 
 unsigned char n_led = 1;
 
 int main(void) {
     USART_Init(103);
     TIMER1_Init();
     
-    //set trig port to output, low light
+    //set trig port to output,LED-Bright
     DDRD |= (1 << DDD5);
+    
+    //set trig port to output, LED-state
+    DDRD |= (1 << DDD7);
     
     //button input light
     DDRD &= ~(1 << DDD2);
@@ -141,6 +151,7 @@ int main(void) {
     PORTC |= (1 << PORTC0) | (1 << PORTC1) | (1 << PORTC2) | (1 << PORTC3);
     
     while (1) {
+        //keyScan
         keyScan();
         //light
         if(!(PIND & (1 << PORTD2))){
@@ -163,7 +174,13 @@ int main(void) {
             n_led++;
             _delay_ms(300);
             }
-        
+        if (PINC & ((1 << PORTC0)| (1 << PORTC1)| (1 << PORTC2)| (1 <<PORTC3)))
+        {
+            PORTD |= (1 << PORTD6);
+        }
+        else{
+            PORTD &= ~(1 << PORTD6);
+        }
         
     }
 }
